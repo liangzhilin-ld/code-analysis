@@ -38,7 +38,7 @@ public class TestDemo {
             System.out.println(i+"  "+commitMessage.toString());
             i++;
         }
-
+        gitAdapter.checkOut("security-huawei");
         // 对比master分支的commitId版本的代码差异
 //        String commitId = "ce52c68b8bed4b6f76d469e951bbb509b29e9662";
         String commitId = "bc6fbc2f905fd7341ed1dd9a2772ccf5fc226758";

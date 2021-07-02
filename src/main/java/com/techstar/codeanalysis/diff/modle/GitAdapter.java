@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -232,15 +233,30 @@ public class GitAdapter {
             return treeParser;
 		}
     }
-
     /**
      * 切换分支
      * @param branchName    分支名称
      * @throws GitAPIException GitAPIException
      */
     public void checkOut(String branchName) throws GitAPIException {
-        //  切换分支
-        git.checkout().setCreateBranch(false).setName(branchName).call();
+    	//判断本地是否存在分支
+    	Boolean isExist=false;
+    	if(this.branchName.equals(branchName)) {
+    		return;
+    	}
+        for (Ref ref : git.branchList().call()) {
+            if (ref.getName().replace(REF_HEADS, "").equals(branchName)) {
+            	isExist= true;
+            	break;
+            }
+        }
+    	//  切换分支
+        if(isExist) {//如果分支在本地已存在，直接checkout即可。
+            git.checkout().setCreateBranch(false).setName(branchName).call();
+        }else {//如果分支在本地不存在，需要创建这个分支，并追踪到远程分支上面。
+            git.checkout().setCreateBranch(true).setName(branchName).setStartPoint("origin/" + branchName).call();
+        }
+        
     }
 
     /**
@@ -328,6 +344,7 @@ public class GitAdapter {
             boolean foundInThisBranch = false;
             RevCommit targetCommit = walk.parseCommit(commit.getId());
             for (Ref e : repository.getRefDatabase().getRefs()) {
+            	System.out.println(e.getName());
                 if(e.getName().startsWith("refs/remotes/origin")) {
                     if(walk.isMergedInto(targetCommit,walk.parseCommit(e.getObjectId()))) {
                         String foundInBranch = e.getTarget().getName();

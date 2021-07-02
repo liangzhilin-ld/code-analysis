@@ -10,10 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -23,16 +25,16 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 //https://blog.csdn.net/zou90512/article/details/102163415
 public class DiffCodeAnalysis {
 	static String localPath = "E:\\vbi";
+
     public static void main( String[] args )
     {
         try (Git git = Git.open(new File(Paths.get(localPath, ".git").toString()))) {
+
         	RevWalk walk = new RevWalk(git.getRepository());
         	Iterable<RevCommit> commits = git.log().all().call();
         	for(RevCommit commit:commits){
 //        		commitList.add(commit);
         		//if(commit.getParentCount()==2)continue;
-        		System.out.println(commit.getTree().getId());
-        		System.out.println(commit.toObjectId());
         		System.out.println(commit.toObjectId()+commit.getFullMessage()+"-"+commit.getAuthorIdent().getWhen());
         	}
         	AbstractTreeIterator oldTreeIterator = new FileTreeIterator( git.getRepository() );
