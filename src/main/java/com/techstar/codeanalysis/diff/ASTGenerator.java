@@ -1,5 +1,10 @@
 package com.techstar.codeanalysis.diff;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -8,12 +13,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
+import com.github.pagehelper.util.StringUtil;
 import com.techstar.codeanalysis.diff.modle.ClassInfo;
 import com.techstar.codeanalysis.diff.modle.MethodInfo;
 
@@ -215,11 +223,78 @@ public class ASTGenerator {
      * @return
      */
     public static boolean isMethodTheSame(final MethodDeclaration method1,final MethodDeclaration method2) {
-        if (MD5Encode(method1.toString()).equals(MD5Encode(method2.toString()))) {
+//        if (MD5Encode(method1.toString()).equals(MD5Encode(method2.toString()))) {
+//            return true;
+//        }
+        if (MD5Encode(getValidCode(method1.toString())).equals(MD5Encode(getValidCode(method2.toString())))) {
             return true;
         }
         return false;
     }
+    /**
+     * 去除方法空行与注释后再计算MD5值进行对比
+     * @param source
+     * @return
+     */
+    private static String getValidCode(String source){
+    	Assert.isNotNull(source,"source must not be null");
+    	String tempString = null;
+    	StringBuffer builder = new StringBuffer();
+    	ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(source.getBytes());
+        InputStream inputStream = byteArrayInputStream;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        try {
+			while((tempString = reader.readLine()) != null){
+				String s=tempString;
+				s=delKongHang(s);
+				s=delHangHouZhuShi(s);
+				if(s.isBlank())continue;
+				builder.append(s);
+				builder.append("\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return builder.toString();
+    }
+	/**
+	 * 去掉空行
+	 */
+    private static String delKongHang(String str){
+		if(str.trim()!= null && !str.trim().equals("")){
+			return str;
+		}else{
+			return "";
+		}
+	}
+	
+	/**
+	 * 去掉行后注释
+	 * //和/*和<!--
+	 */
+	private static String delHangHouZhuShi(String str){
+		if(str.contains("//")){
+			return str.substring(0,str.indexOf("//"));
+		}else if(str.contains("/*"))
+		{
+			return str.substring(0,str.indexOf("/*"));
+		}else if(str.contains("<!--"))
+		{
+			return str.substring(0,str.indexOf("<!--"));
+		}
+		else if(str.contains("* "))
+		{
+			return str.substring(0,str.indexOf("* "));
+		}
+		else if(str.contains("*/"))
+		{
+			return str.substring(0,str.indexOf("*/"));
+		}
+		else{
+			return str;
+		}
+	}
+     
 }
 
 

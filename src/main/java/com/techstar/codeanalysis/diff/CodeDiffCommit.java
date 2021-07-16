@@ -144,9 +144,6 @@ public class CodeDiffCommit {
         List<MethodInfo> methodInfoList = new ArrayList<MethodInfo>();
         try {
             String newJavaPath = diffEntry.getNewPath();
-//            if(newJavaPath.equals("vbiServer/license-authentication/src/main/java/com/techstar/license/ex/FileUtils.java")) {
-//            	boolean fls=true;
-//            }
             //  排除测试类
             if (newJavaPath.contains("/src/test/java/")) {
                 return null;
